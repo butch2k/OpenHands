@@ -336,6 +336,9 @@ export function ChatInterface() {
           ref={scrollRef}
           onScroll={(e) => onChatBodyScroll(e.currentTarget)}
           className="custom-scrollbar-always flex flex-col grow overflow-y-auto overflow-x-hidden px-4 pt-4 gap-2"
+          role="log"
+          aria-live="polite"
+          aria-busy={isChatLoading}
         >
           {isChatLoading && isReturningToConversation && (
             <ChatMessagesSkeleton />

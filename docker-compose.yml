@@ -16,6 +16,9 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
+      # SECURITY: Docker socket mount grants container-level root-equivalent access
+      # to the host. This is required for OpenHands to create and manage sandbox
+      # containers. Do not expose this container to untrusted networks.
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.openhands:/.openhands
       - ${WORKSPACE_BASE:-$PWD/workspace}:/opt/workspace_base

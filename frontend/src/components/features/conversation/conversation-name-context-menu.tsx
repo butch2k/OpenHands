@@ -220,6 +220,7 @@ export function ConversationNameContextMenu({
                   onClick={onCopyShareLink}
                   className="p-1 hover:bg-[#717888] rounded cursor-pointer"
                   title={t(I18nKey.BUTTON$COPY_TO_CLIPBOARD)}
+                  aria-label={t(I18nKey.BUTTON$COPY_TO_CLIPBOARD)}
                 >
                   <CopyIcon width={16} height={16} />
                 </button>

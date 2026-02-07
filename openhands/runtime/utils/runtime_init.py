@@ -27,8 +27,8 @@ def init_user_and_working_directory(
         - If the UID differs, it logs a warning and return an updated user_id.
         - If the user doesn't exist, it proceeds to create the user.
     * Sudo Configuration:
-        - Appends %sudo ALL=(ALL) NOPASSWD:ALL to /etc/sudoers to grant
-            passwordless sudo access to the sudo group.
+        - Appends a restricted sudoers line to /etc/sudoers granting
+            passwordless sudo for apt-get and chown only.
         - Adds the user to the sudo group with the useradd command, handling
             UID conflicts by incrementing the UID if necessary.
 
@@ -64,7 +64,7 @@ def init_user_and_working_directory(
         setup_user = True
         try:
             result = subprocess.run(
-                f'id -u {username}', shell=True, check=True, capture_output=True
+                ['id', '-u', username], check=True, capture_output=True
             )
             existing_user_id = int(result.stdout.decode().strip())
 
@@ -91,20 +91,27 @@ def init_user_and_working_directory(
                 raise
 
         if setup_user:
-            # Add sudoer
-            sudoer_line = r"echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers"
-            output = subprocess.run(sudoer_line, shell=True, capture_output=True)
-            if output.returncode != 0:
-                raise RuntimeError(f'Failed to add sudoer: {output.stderr.decode()}')
-            logger.debug(
-                f'Added sudoer successfully. Output: [{output.stdout.decode()}]'
-            )
+            # Add sudoer - restricted to apt-get and chown only for least-privilege
+            sudoer_line = '%sudo ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt, /bin/chown, /usr/bin/chown\n'
+            try:
+                with open('/etc/sudoers', 'a') as f:
+                    f.write(sudoer_line)
+            except OSError as e:
+                raise RuntimeError(f'Failed to add sudoer: {e}')
+            logger.debug('Added restricted sudoer line successfully.')
 
-            command = (
-                f'useradd -rm -d /home/{username} -s /bin/bash '
-                f'-g root -G sudo -u {user_id} {username}'
+            output = subprocess.run(
+                [
+                    'useradd', '-rm',
+                    '-d', f'/home/{username}',
+                    '-s', '/bin/bash',
+                    '-g', 'root',
+                    '-G', 'sudo',
+                    '-u', str(user_id),
+                    username,
+                ],
+                capture_output=True,
             )
-            output = subprocess.run(command, shell=True, capture_output=True)
             if output.returncode == 0:
                 logger.debug(
                     f'Added user `{username}` successfully with UID {user_id}. Output: [{output.stdout.decode()}]'
@@ -116,18 +123,24 @@ def init_user_and_working_directory(
 
     # First create the working directory, independent of the user
     logger.debug(f'Client working directory: {initial_cwd}')
-    command = f'umask 002; mkdir -p {initial_cwd}'
-    output = subprocess.run(command, shell=True, capture_output=True)
-    out_str = output.stdout.decode()
+    old_umask = os.umask(0o002)
+    try:
+        os.makedirs(initial_cwd, exist_ok=True)
+    finally:
+        os.umask(old_umask)
 
     # Get group ID from environment variable, default to 'root' for backward compatibility
     group_id = os.getenv('SANDBOX_GROUP_ID', 'root')
-    command = f'chown -R {username}:{group_id} {initial_cwd}'
-    output = subprocess.run(command, shell=True, capture_output=True)
-    out_str += output.stdout.decode()
+    output = subprocess.run(
+        ['chown', '-R', f'{username}:{group_id}', initial_cwd],
+        capture_output=True,
+    )
+    out_str = output.stdout.decode()
 
-    command = f'chmod g+rw {initial_cwd}'
-    output = subprocess.run(command, shell=True, capture_output=True)
+    output = subprocess.run(
+        ['chmod', 'g+rw', initial_cwd],
+        capture_output=True,
+    )
     out_str += output.stdout.decode()
     logger.debug(f'Created working directory. Output: [{out_str}]')
 

@@ -10,6 +10,17 @@ export function ResizeHandle({ onMouseDown, className }: ResizeHandleProps) {
     <div
       className={cn("relative w-1 bg-transparent cursor-ew-resize", className)}
       onMouseDown={onMouseDown}
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize panel"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          // Trigger resize via keyboard by synthesizing a mouse event
+          onMouseDown(e as unknown as React.MouseEvent);
+        }
+      }}
     >
       {/* Visual indicator */}
       <div className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2" />

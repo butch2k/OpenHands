@@ -62,4 +62,9 @@ def get_default_encryption_keys(workspace_dir: Path) -> list[EncryptionKey]:
         encryption_keys, context={'expose_secrets': True}
     )
     key_file.write_bytes(json_data)
+
+    # Restrict key file permissions to owner-only read/write (Unix only)
+    if os.name != 'nt':
+        os.chmod(key_file, 0o600)
+
     return encryption_keys

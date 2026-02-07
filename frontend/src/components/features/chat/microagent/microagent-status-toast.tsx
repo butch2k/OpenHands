@@ -35,7 +35,7 @@ function ConversationCreatedToast({
           {t("MICROAGENT$VIEW_CONVERSATION")}
         </a>
       </div>
-      <button type="button" onClick={onClose}>
+      <button type="button" onClick={onClose} aria-label={t("BUTTON$CLOSE")}>
         <CloseIcon />
       </button>
     </div>
@@ -62,7 +62,7 @@ function ConversationStartingToast({
           {t("MICROAGENT$VIEW_CONVERSATION")}
         </a>
       </div>
-      <button type="button" onClick={onClose}>
+      <button type="button" onClick={onClose} aria-label={t("BUTTON$CLOSE")}>
         <CloseIcon />
       </button>
     </div>
@@ -94,7 +94,7 @@ function ConversationFinishedToast({
           {t("MICROAGENT$VIEW_CONVERSATION")}
         </a>
       </div>
-      <button type="button" onClick={onClose}>
+      <button type="button" onClick={onClose} aria-label={t("BUTTON$CLOSE")}>
         <CloseIcon />
       </button>
     </div>
@@ -122,7 +122,7 @@ function ConversationErroredToast({
     <div className="flex items-start gap-2">
       <SuccessIndicator status="error" />
       <div>{displayMessage}</div>
-      <button type="button" onClick={onClose}>
+      <button type="button" onClick={onClose} aria-label={t("BUTTON$CLOSE")}>
         <CloseIcon />
       </button>
     </div>

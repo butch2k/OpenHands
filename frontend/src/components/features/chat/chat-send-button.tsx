@@ -1,4 +1,6 @@
 import { ArrowUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { I18nKey } from "#/i18n/declaration";
 import { cn } from "#/utils/utils";
 
 export interface ChatSendButtonProps {
@@ -12,6 +14,7 @@ export function ChatSendButton({
   handleSubmit,
   disabled,
 }: ChatSendButtonProps) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
@@ -26,6 +29,7 @@ export function ChatSendButton({
       data-testid="submit-button"
       onClick={handleSubmit}
       disabled={disabled}
+      aria-label={t(I18nKey.BUTTON$SEND)}
     >
       <ArrowUp color={disabled ? "#959CB2" : "white"} />
     </button>

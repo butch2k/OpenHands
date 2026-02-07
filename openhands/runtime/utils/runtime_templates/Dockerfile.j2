@@ -77,7 +77,7 @@ RUN (if getent group 1000 >/dev/null 2>&1; then \
         useradd -u 1000 -g openhands -m -s /bin/bash openhands; \
     fi) && \
     usermod -aG sudo openhands && \
-    echo 'openhands ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+    echo 'openhands ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt, /bin/chown, /usr/bin/chown' >> /etc/sudoers && \
     # Set empty password for openhands user to allow passwordless su
     passwd -d openhands && \
     # Set empty password for root user as well to ensure su works in both directions

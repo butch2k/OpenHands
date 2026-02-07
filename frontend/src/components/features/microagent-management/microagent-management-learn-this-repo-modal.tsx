@@ -80,6 +80,7 @@ export function MicroagentManagementLearnThisRepoModal({
               onClick={onCancel}
               className="cursor-pointer"
               data-testid="modal-close-button"
+              aria-label={t(I18nKey.BUTTON$CLOSE)}
             >
               <XIcon width={24} height={24} color="#F9FBFE" />
             </button>

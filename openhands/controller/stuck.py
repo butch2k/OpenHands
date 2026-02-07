@@ -163,7 +163,7 @@ class StuckDetector:
                 self.stuck_analysis = StuckDetector.StuckAnalysis(
                     loop_type='repeating_action_observation',
                     loop_repeat_times=4,
-                    loop_start_idx=filtered_history.index(last_actions[-1])
+                    loop_start_idx=self._safe_find_index(filtered_history, last_actions[-1])
                     + filtered_history_offset,
                 )
                 return True
@@ -192,7 +192,7 @@ class StuckDetector:
                 self.stuck_analysis = StuckDetector.StuckAnalysis(
                     loop_type='repeating_action_error',
                     loop_repeat_times=3,
-                    loop_start_idx=filtered_history.index(last_actions[-1])
+                    loop_start_idx=self._safe_find_index(filtered_history, last_actions[-1])
                     + filtered_history_offset,
                 )
                 return True
@@ -218,7 +218,7 @@ class StuckDetector:
                             self.stuck_analysis = StuckDetector.StuckAnalysis(
                                 loop_type='repeating_action_error',
                                 loop_repeat_times=3,
-                                loop_start_idx=filtered_history.index(last_actions[-1])
+                                loop_start_idx=self._safe_find_index(filtered_history, last_actions[-1])
                                 + filtered_history_offset,
                             )
                             return True
@@ -237,7 +237,7 @@ class StuckDetector:
                         self.stuck_analysis = StuckDetector.StuckAnalysis(
                             loop_type='repeating_action_error',
                             loop_repeat_times=3,
-                            loop_start_idx=filtered_history.index(last_actions[-1])
+                            loop_start_idx=self._safe_find_index(filtered_history, last_actions[-1])
                             + filtered_history_offset,
                         )
                         return True
@@ -400,7 +400,7 @@ class StuckDetector:
                 self.stuck_analysis = StuckDetector.StuckAnalysis(
                     loop_type='repeating_action_observation_pattern',
                     loop_repeat_times=3,
-                    loop_start_idx=filtered_history.index(last_six_actions[-1])
+                    loop_start_idx=self._safe_find_index(filtered_history, last_six_actions[-1])
                     + filtered_history_offset,
                 )
                 return True
@@ -460,6 +460,20 @@ class StuckDetector:
                 return True
 
         return False
+
+    @staticmethod
+    def _safe_find_index(history: list[Event], target: Event) -> int:
+        """Find the index of target in history, returning 0 if not found.
+
+        ``list.index()`` raises ``ValueError`` when the element is absent,
+        which can happen when duplicate actions compare as equal under the
+        default ``__eq__`` but the specific object was filtered out or when
+        ``_eq_no_pid`` considers objects equal while ``__eq__`` does not.
+        """
+        try:
+            return history.index(target)
+        except ValueError:
+            return 0
 
     def _eq_no_pid(self, obj1: Event, obj2: Event) -> bool:
         if isinstance(obj1, IPythonRunCellAction) and isinstance(

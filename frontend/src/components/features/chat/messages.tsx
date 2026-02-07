@@ -227,37 +227,38 @@ export const Messages: React.FC<MessagesProps> = React.memo(
     };
 
     return (
-      <>
+      <div role="list">
         {messages.map((message, index) => (
-          <EventMessage
-            key={index}
-            event={message}
-            hasObservationPair={actionHasObservationPair(message)}
-            isAwaitingUserConfirmation={isAwaitingUserConfirmation}
-            isLastMessage={messages.length - 1 === index}
-            microagentStatus={getMicroagentStatusForEvent(message.id)}
-            microagentConversationId={getMicroagentConversationIdForEvent(
-              message.id,
-            )}
-            microagentPRUrl={getMicroagentPRUrlForEvent(message.id)}
-            actions={
-              conversation?.selected_repository && !isV1Conversation
-                ? [
-                    {
-                      icon: (
-                        <MemoryIcon className="w-[14px] h-[14px] text-white" />
-                      ),
-                      onClick: () => {
-                        setSelectedEventId(message.id);
-                        setShowLaunchMicroagentModal(true);
+          <div key={index} role="listitem">
+            <EventMessage
+              event={message}
+              hasObservationPair={actionHasObservationPair(message)}
+              isAwaitingUserConfirmation={isAwaitingUserConfirmation}
+              isLastMessage={messages.length - 1 === index}
+              microagentStatus={getMicroagentStatusForEvent(message.id)}
+              microagentConversationId={getMicroagentConversationIdForEvent(
+                message.id,
+              )}
+              microagentPRUrl={getMicroagentPRUrlForEvent(message.id)}
+              actions={
+                conversation?.selected_repository && !isV1Conversation
+                  ? [
+                      {
+                        icon: (
+                          <MemoryIcon className="w-[14px] h-[14px] text-white" />
+                        ),
+                        onClick: () => {
+                          setSelectedEventId(message.id);
+                          setShowLaunchMicroagentModal(true);
+                        },
+                        tooltip: t("MICROAGENT$ADD_TO_MEMORY"),
                       },
-                      tooltip: t("MICROAGENT$ADD_TO_MEMORY"),
-                    },
-                  ]
-                : undefined
-            }
-            isInLast10Actions={messages.length - 1 - index < 10}
-          />
+                    ]
+                  : undefined
+              }
+              isInLast10Actions={messages.length - 1 - index < 10}
+            />
+          </div>
         ))}
 
         {optimisticUserMessage && (
@@ -279,7 +280,7 @@ export const Messages: React.FC<MessagesProps> = React.memo(
             />,
             document.getElementById("modal-portal-exit") || document.body,
           )}
-      </>
+      </div>
     );
   },
   (prevProps, nextProps) => {

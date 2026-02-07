@@ -21,6 +21,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
+      # SECURITY: Docker socket mount grants container-level root-equivalent access
+      # to the host. Required for sandbox container management. Dev-only config.
       - /var/run/docker.sock:/var/run/docker.sock
       - ${WORKSPACE_BASE:-$PWD/workspace}:/opt/workspace_base
       # source code

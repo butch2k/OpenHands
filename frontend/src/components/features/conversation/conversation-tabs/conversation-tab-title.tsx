@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { I18nKey } from "#/i18n/declaration";
 import RefreshIcon from "#/icons/u-refresh.svg?react";
 import { useUnifiedGetGitChanges } from "#/hooks/query/use-unified-get-git-changes";
 
@@ -10,6 +12,7 @@ export function ConversationTabTitle({
   title,
   conversationKey,
 }: ConversationTabTitleProps) {
+  const { t } = useTranslation();
   const { refetch } = useUnifiedGetGitChanges();
 
   const handleRefresh = () => {
@@ -24,6 +27,7 @@ export function ConversationTabTitle({
           type="button"
           className="flex w-[26px] py-1 justify-center items-center gap-[10px] rounded-[7px] hover:bg-[#474A54] cursor-pointer"
           onClick={handleRefresh}
+          aria-label={t(I18nKey.BUTTON$REFRESH)}
         >
           <RefreshIcon width={12.75} height={15} color="#ffffff" />
         </button>

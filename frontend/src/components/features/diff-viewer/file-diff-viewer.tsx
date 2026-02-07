@@ -147,7 +147,7 @@ export function FileDiffViewer({ path, type }: FileDiffViewerProps) {
           {isFetchingData && <LoadingSpinner className="w-5 h-5" />}
           {!isFetchingData && statusIcon}
           <strong className="w-full truncate">{filePath}</strong>
-          <button data-testid="collapse" type="button">
+          <button data-testid="collapse" type="button" aria-label={isCollapsed ? "Expand" : "Collapse"}>
             <ChevronUp
               className={cn(
                 "w-4 h-4 transition-transform",

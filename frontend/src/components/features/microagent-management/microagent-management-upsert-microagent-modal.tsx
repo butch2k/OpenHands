@@ -117,7 +117,7 @@ export function MicroagentManagementUpsertMicroagentModal({
                 <FaCircleInfo className="text-primary" />
               </a>
             </div>
-            <button type="button" onClick={onCancel} className="cursor-pointer">
+            <button type="button" onClick={onCancel} className="cursor-pointer" aria-label={t(I18nKey.BUTTON$CLOSE)}>
               <XIcon width={24} height={24} color="#F9FBFE" />
             </button>
           </div>

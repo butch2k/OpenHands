@@ -267,14 +267,14 @@ class JwtService:
 
         # Add standard JWT claims
         now = utc_now()
+        if expires_in is None:
+            expires_in = timedelta(hours=24)
+
         jwt_payload = {
             **payload,
             'iat': int(now.timestamp()),
+            'exp': int((now + expires_in).timestamp()),
         }
-
-        # Only add exp if expires_in is provided
-        if expires_in is not None:
-            jwt_payload['exp'] = int((now + expires_in).timestamp())
 
         # Get the raw key for JWE encryption and derive a 256-bit key
         secret_key = self._keys[key_id].key.get_secret_value()
@@ -326,7 +326,17 @@ class JwtService:
             plaintext = _jwe_decrypt(token, key_256)
             # Parse the JSON string back to dictionary
             payload = json.loads(plaintext)
+
+            # Validate token expiry
+            exp = payload.get('exp')
+            if exp is not None:
+                now = utc_now()
+                if int(now.timestamp()) > exp:
+                    raise ValueError('Token has expired')
+
             return payload
+        except ValueError:
+            raise
         except Exception as e:
             raise Exception(f'Token decryption failed: {str(e)}')
 

@@ -40,10 +40,40 @@ from openhands.storage.conversation.conversation_validator import (
 )
 
 
+def _is_origin_allowed(origin: str | None) -> bool:
+    """Check if the WebSocket Origin header is allowed.
+
+    Non-browser clients may not send an Origin header, which is permitted.
+    Browser clients must match the configured CORS allowed origins.
+    """
+    if origin is None:
+        return True
+
+    from openhands.server.shared import _cors_allowed_origins
+
+    # Normalize by stripping trailing slashes for comparison
+    normalized_origin = origin.rstrip('/')
+    for allowed in _cors_allowed_origins:
+        if normalized_origin == allowed.rstrip('/'):
+            return True
+    return False
+
+
 @sio.event
 async def connect(connection_id: str, environ: dict) -> None:
     try:
         logger.info(f'sio:connect: {connection_id}')
+
+        # Validate Origin header to prevent cross-site WebSocket hijacking
+        origin = environ.get('HTTP_ORIGIN')
+        if not _is_origin_allowed(origin):
+            logger.warning(
+                f'WebSocket connection rejected: origin {origin!r} not in allowed origins'
+            )
+            raise ConnectionRefusedError(
+                f'Origin {origin!r} is not allowed'
+            )
+
         query_params = parse_qs(environ.get('QUERY_STRING', ''))
         latest_event_id_str = query_params.get('latest_event_id', [-1])[0]
         try:

@@ -25,6 +25,7 @@ export function ConversationTabNav({
         onClick();
       }}
       data-testid={`conversation-tab-${tabValue}`}
+      aria-label={label}
       className={cn(
         "flex items-center gap-2 rounded-md cursor-pointer",
         "pl-1.5 pr-2 py-1",

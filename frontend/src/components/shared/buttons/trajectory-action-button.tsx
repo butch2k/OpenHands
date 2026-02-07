@@ -19,6 +19,7 @@ export function TrajectoryActionButton({
       data-testid={testId}
       onClick={onClick}
       className="flex items-center justify-center w-[26px] h-[26px] rounded-lg cursor-pointer bg-[#25272D] hover:bg-tertiary"
+      aria-label={tooltip}
     >
       {icon}
     </button>

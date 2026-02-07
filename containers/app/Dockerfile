@@ -50,7 +50,7 @@ RUN mkdir -p $FILE_STORE_PATH
 RUN mkdir -p $WORKSPACE_BASE
 
 RUN apt-get update -y \
-    && apt-get install -y curl ssh sudo \
+    && apt-get install -y curl ssh sudo gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Default is 1000, but OSX is often 501
@@ -62,7 +62,7 @@ RUN groupadd --gid $OPENHANDS_USER_ID openhands
 RUN useradd -l -m -u $OPENHANDS_USER_ID --gid $OPENHANDS_USER_ID -s /bin/bash openhands && \
     usermod -aG openhands openhands && \
     usermod -aG sudo openhands && \
-    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+    echo '%sudo ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt, /bin/chown, /usr/bin/chown' >> /etc/sudoers
 RUN chown -R openhands:openhands /app && chmod -R 770 /app
 RUN sudo chown -R openhands:openhands $WORKSPACE_BASE && sudo chmod -R 770 $WORKSPACE_BASE
 USER openhands

@@ -83,7 +83,7 @@ export function LaunchMicroagentModal({
               </a>
             </h2>
 
-            <button type="button" onClick={onClose}>
+            <button type="button" onClick={onClose} aria-label={t("BUTTON$CLOSE")}>
               <CloseIcon />
             </button>
           </div>

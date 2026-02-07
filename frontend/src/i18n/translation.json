@@ -16014,5 +16014,17 @@
     "tr": "Bağlantı panoya kopyalandı",
     "de": "Link in die Zwischenablage kopiert",
     "uk": "Посилання скопійовано в буфер обміну"
+  },
+  "BUTTON$ATTACH_FILE": {
+    "en": "Attach file"
+  },
+  "BUTTON$REMOVE_FILE": {
+    "en": "Remove file"
+  },
+  "BUTTON$SCROLL_TO_BOTTOM": {
+    "en": "Scroll to bottom"
+  },
+  "BUTTON$REMOVE": {
+    "en": "Remove"
   }
 }

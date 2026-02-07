@@ -984,21 +984,34 @@ if __name__ == '__main__':
                     status_code=400, detail='Path must be an absolute path'
                 )
 
-            if not os.path.exists(path):
+            # Resolve the path to prevent path traversal via symlinks or ..
+            resolved_path = os.path.realpath(path)
+            workspace_dir = os.path.realpath(args.working_dir)
+            if not (
+                resolved_path == workspace_dir
+                or resolved_path.startswith(workspace_dir + os.sep)
+            ):
+                raise HTTPException(
+                    status_code=403,
+                    detail='Access denied: path is outside the workspace directory',
+                )
+
+            if not os.path.exists(resolved_path):
                 raise HTTPException(status_code=404, detail='File not found')
 
             with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as temp_zip:
                 with ZipFile(temp_zip, 'w') as zipf:
-                    for root, _, files in os.walk(path):
+                    for root, _, files in os.walk(resolved_path):
                         for file in files:
                             file_path = os.path.join(root, file)
                             zipf.write(
-                                file_path, arcname=os.path.relpath(file_path, path)
+                                file_path,
+                                arcname=os.path.relpath(file_path, resolved_path),
                             )
                 return FileResponse(
                     path=temp_zip.name,
                     media_type='application/zip',
-                    filename=f'{os.path.basename(path)}.zip',
+                    filename=f'{os.path.basename(resolved_path)}.zip',
                     background=BackgroundTask(lambda: os.unlink(temp_zip.name)),
                 )
 

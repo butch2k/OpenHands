@@ -150,6 +150,7 @@ export function ExpandableMessage({
               type="button"
               onClick={() => setShowDetails(!showDetails)}
               className="cursor-pointer text-left"
+              aria-label={t(showDetails ? I18nKey.EXPANDABLE_MESSAGE$HIDE_DETAILS : I18nKey.EXPANDABLE_MESSAGE$SHOW_DETAILS)}
             >
               {showDetails ? (
                 <ArrowUp

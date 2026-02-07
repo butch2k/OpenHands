@@ -27,27 +27,23 @@ export const Messages: React.FC<MessagesProps> = React.memo(
     // For now, we'll skip microagent features
 
     return (
-      <>
+      <div role="list">
         {messages.map((message, index) => (
-          <EventMessage
-            key={message.id}
-            event={message}
-            messages={allEvents}
-            isLastMessage={messages.length - 1 === index}
-            isInLast10Actions={messages.length - 1 - index < 10}
-            planPreviewEventIds={planPreviewEventIds}
-            // Microagent props - not implemented yet for V1
-            // microagentStatus={undefined}
-            // microagentConversationId={undefined}
-            // microagentPRUrl={undefined}
-            // actions={undefined}
-          />
+          <div key={message.id} role="listitem">
+            <EventMessage
+              event={message}
+              messages={allEvents}
+              isLastMessage={messages.length - 1 === index}
+              isInLast10Actions={messages.length - 1 - index < 10}
+              planPreviewEventIds={planPreviewEventIds}
+            />
+          </div>
         ))}
 
         {optimisticUserMessage && (
           <ChatMessage type="user" message={optimisticUserMessage} />
         )}
-      </>
+      </div>
     );
   },
   (prevProps, nextProps) => {

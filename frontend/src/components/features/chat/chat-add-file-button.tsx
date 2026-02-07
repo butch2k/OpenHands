@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { I18nKey } from "#/i18n/declaration";
 import PaperclipIcon from "#/icons/paper-clip.svg?react";
 import { cn } from "#/utils/utils";
 
@@ -10,6 +12,7 @@ export function ChatAddFileButton({
   handleFileIconClick,
   disabled = false,
 }: ChatAddFileButtonProps) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
@@ -20,6 +23,7 @@ export function ChatAddFileButton({
       data-name="Shape"
       data-testid="paperclip-icon"
       onClick={handleFileIconClick}
+      aria-label={t(I18nKey.BUTTON$ATTACH_FILE)}
     >
       <PaperclipIcon
         className="block max-w-none w-[13px] h-[25px]"

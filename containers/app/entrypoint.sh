@@ -35,39 +35,64 @@ if [[ "$INSTALL_THIRD_PARTY_RUNTIMES" == "true" ]]; then
   fi
 fi
 
+# ============================================================
+# Privileged operations phase (running as root)
+# All user creation, group management, and directory permission
+# changes are performed here before dropping privileges.
+# ============================================================
+
 if [[ "$SANDBOX_USER_ID" -eq 0 ]]; then
   echo "Running OpenHands as root"
   export RUN_AS_OPENHANDS=false
-  "$@"
+  exec "$@"
+fi
+
+# --- Non-root sandbox user setup (privileged ops) ---
+
+echo "Setting up enduser with id $SANDBOX_USER_ID"
+if id "enduser" &>/dev/null; then
+  echo "User enduser already exists. Skipping creation."
 else
-  echo "Setting up enduser with id $SANDBOX_USER_ID"
-  if id "enduser" &>/dev/null; then
-    echo "User enduser already exists. Skipping creation."
-  else
-    if ! useradd -l -m -u $SANDBOX_USER_ID -s /bin/bash enduser; then
-      echo "Failed to create user enduser with id $SANDBOX_USER_ID. Moving openhands user."
-      incremented_id=$(($SANDBOX_USER_ID + 1))
-      usermod -u $incremented_id openhands
-      if ! useradd -l -m -u $SANDBOX_USER_ID -s /bin/bash enduser; then
-        echo "Failed to create user enduser with id $SANDBOX_USER_ID for a second time. Exiting."
-        exit 1
-      fi
+  if ! useradd -l -m -u "$SANDBOX_USER_ID" -s /bin/bash enduser; then
+    echo "Failed to create user enduser with id $SANDBOX_USER_ID. Moving openhands user."
+    incremented_id=$(("$SANDBOX_USER_ID" + 1))
+    usermod -u "$incremented_id" openhands
+    if ! useradd -l -m -u "$SANDBOX_USER_ID" -s /bin/bash enduser; then
+      echo "Failed to create user enduser with id $SANDBOX_USER_ID for a second time. Exiting."
+      exit 1
     fi
   fi
-  usermod -aG openhands enduser
-  # get the user group of /var/run/docker.sock and set openhands to that group
-  DOCKER_SOCKET_GID=$(stat -c '%g' /var/run/docker.sock)
-  echo "Docker socket group id: $DOCKER_SOCKET_GID"
-  if getent group $DOCKER_SOCKET_GID; then
-    echo "Group with id $DOCKER_SOCKET_GID already exists"
-  else
-    echo "Creating group with id $DOCKER_SOCKET_GID"
-    groupadd -g $DOCKER_SOCKET_GID docker
-  fi
-
-  mkdir -p /home/enduser/.cache/huggingface/hub/
-
-  usermod -aG $DOCKER_SOCKET_GID enduser
-  echo "Running as enduser"
-  su enduser /bin/bash -c "${*@Q}" # This magically runs any arguments passed to the script as a command
 fi
+usermod -aG openhands enduser
+
+# SECURITY NOTE: The Docker socket (/var/run/docker.sock) is mounted into this
+# container so that OpenHands can create and manage sandbox containers for code
+# execution. Access to the Docker socket is equivalent to root access on the
+# host, so it is critical that:
+#   1. Only trusted users/processes have access to this container.
+#   2. The socket is not exposed beyond this orchestrating container.
+#   3. The enduser is added to the socket's group solely to manage sandboxes.
+DOCKER_SOCKET_GID=$(stat -c '%g' /var/run/docker.sock)
+echo "Docker socket group id: $DOCKER_SOCKET_GID"
+if getent group "$DOCKER_SOCKET_GID"; then
+  echo "Group with id $DOCKER_SOCKET_GID already exists"
+else
+  echo "Creating group with id $DOCKER_SOCKET_GID"
+  groupadd -g "$DOCKER_SOCKET_GID" docker
+fi
+
+mkdir -p /home/enduser/.cache/huggingface/hub/
+chown -R enduser:enduser /home/enduser/.cache
+
+usermod -aG "$DOCKER_SOCKET_GID" enduser
+
+# ============================================================
+# Privilege drop phase
+# All privileged operations are complete. Use gosu to exec as
+# the unprivileged enduser, replacing the current root process.
+# gosu is preferred over su because it uses exec and avoids
+# leaving a root-owned parent process or TTY issues.
+# ============================================================
+
+echo "Dropping privileges to enduser"
+exec gosu enduser "$@"
